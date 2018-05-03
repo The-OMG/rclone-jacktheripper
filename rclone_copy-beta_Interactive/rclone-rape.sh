@@ -4,10 +4,10 @@
 # WARNING
 #	USE AT YOUR OWN RISK.
 #	I would not recommend adding an "&" to the script. you'll be in for a bad time.
-	
+
 # PURPOSE
 #	The purpose of this script is to distribute load of API usage across multiple accounts.
-	
+
 # OPERATION
 #	chmod u+x *.sh
 #	./jacktheripper.sh
