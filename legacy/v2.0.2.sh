@@ -21,7 +21,6 @@
 ## Gloabal Variables
 SOURCE_PATH="${SOURCE}:${SOURCE_SUBDIR}/"
 DEST_PATH="${DEST}:${DEST_SUBDIR}/"
-
 SOURCE_FILES="${HOME}/.config/rclone/${SOURCE}filelist.txt"
 
 ## Global Functions

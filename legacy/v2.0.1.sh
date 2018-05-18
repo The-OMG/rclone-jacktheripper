@@ -42,10 +42,10 @@ function ask_yes_or_no() {
 ## Rclone functions
 function rclone_list_files() {
   rclone lsf \
-    "${SOURCE_PATH}" \
-    --files-only \
-    -R \
-    --fast-list >>"${SOURCE_FILES}"
+  "${SOURCE_PATH}" \
+  --files-only \
+  -R \
+  --fast-list >>"${SOURCE_FILES}"
 }
 function merged_listed_input_files() {
   echo "${SOURCE_PATH}rclone_list_files"
@@ -80,9 +80,8 @@ function source_interactive_input() {
   read -r -p 'Source Subdirectory: ' SOURCE_SUBDIR
   sleep 2
   echo "${SOURCE_PATH}"
-  if "no" == "$('ask_yes_or_no' "Are you sure you want to download from here?")";
-		then
-    	echo "Exiting."
+  if "no" == "$('ask_yes_or_no' "Are you sure you want to download from here?")"; then
+    echo "Exiting."
     exit 0
   fi
 }
@@ -97,9 +96,8 @@ function destination_interactive_input() {
   read -r -p 'Destination Subdirectory: ' DEST_SUBDIR
   sleep 2
   echo "${DEST_PATH}"
-  if "no" == "$('ask_yes_or_no' "Are you sure you want to download from here?")";
-		then
-    	echo "Exiting."
+  if "no" == "$('ask_yes_or_no' "Are you sure you want to download from here?")"; then
+    echo "Exiting."
     exit 0
   fi
 }

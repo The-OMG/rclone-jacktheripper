@@ -16,12 +16,12 @@
 #							     \__\/         \__\/         \__\/
 #
 ###############################################################################
-# PERMISSIONS
 
 ## Gloabal Variables
 SOURCE_PATH="${SOURCE}:${SOURCE_SUBDIR}/"
 DEST_PATH="${DEST}:${DEST_SUBDIR}/"
-SOURCE_FILES="${HOME}/.config/rclone/${SOURCE}filelist.txt"
+SOURCE_FILES="${HOME}/.config/jacktheripper/filelist.txt"
+LOGFILE="${HOME}/logs/jacktheripper.log"
 
 ## Global Functions
 function _ask_yes_or_no() {
@@ -31,21 +31,30 @@ function _ask_yes_or_no() {
   *) echo "no" ;;
   esac
 }
+
+## Setup working directories
+function _workdirs() {
+  mkdir -p ${HOME}/.config/jacktheripper
+  mkdir -p ${HOME}/logs
+}
+
 ## Rclone functions
 function _rclone_list_files() {
   local rcloneARGS=(
     --files-only
     -R
+    --checkers 20
     --fast-list
   )
 
-  echo "Creating input filelist"
+  echo "Creating input filelist" | tee -a "$LOGFILE"
   sleep 2
-  rclone lsf "${SOURCE_PATH}" "${rcloneARGS[@]}" >>"${SOURCE_FILES}"
+  echo "This process may take a long time."
+  rclone lsf "${SOURCE_PATH}" "${rcloneARGS[@]}" "
 }
 
 function merged_listed_input_files() {
-  echo "${SOURCE_PATH}_rclone_list_files"
+  echo "${SOURCE_PATH}_rclone_list_files" | tee -a "$SOURCE_FILES
 }
 
 ## User input
@@ -84,25 +93,23 @@ function _destination_interactive_input() {
 }
 
 function _jacktheripper() {
-  local parallel_log="${HOME}/logs/jacktheripper-rclone.log"
-  local rclone_log="${HOME}/logs/jacktheripper.log"
   local parallelARGS=(
     "--link"
     "-j12"
-    "--joblog=${parallel_log}"
+    "--joblog=${HOME}/logs/jacktheripper-parallel.log"
     "-X"
     "--progress"
     "--load=50%"
     "--retries 3"
     "--noswap"
-    "--memfree 128M"
+    "--memfree=128M"
     "--resume-failed"
     "--delay"
   )
   local rcloneARGS=(
     "--fast-list"
     "-vv"
-    "--log-file=${rclone_log}"
+    "--log-file=${HOME}/logs/jacktheripper-rclone.log"
     "--checksum"
     "--transfers=2"
     "--checkers=2"
@@ -118,10 +125,11 @@ function _jacktheripper() {
     "--low-level-retries=10"
   )
 
-  parallel "${parallelARGS[@]}" rclone copy "${rcloneARGS[@]}" {1}{2}:"${DEST_SUBDIR}" :::: "$ACCOUNTS" "$PORTS"
+  parallel "${parallelARGS[@]}" rclone copy "${rcloneARGS[@]}" "$SOURCE_PATH" "{1}:${DEST_SUBDIR}{2}" :::: "$ACCOUNTS" ""
 }
 
 ## final script
+_workdirs
 _source_interactive_input
 _destination_interactive_input
 _rclone_list_files
