@@ -1,21 +1,4 @@
 #!/bin/bash
-###############################################################################
-#  Wrapper script for rclone to distribute transfers over multiple accounts.  #
-###############################################################################
-#
-#							      ___           ___           ___
-#							     /  /\         /__/\         /  /\
-#							    /  /::\       |  |::\       /  /:/_
-#							   /  /:/\:\      |  |:|:\     /  /:/ /\
-#							  /  /:/  \:\   __|__|:|\:\   /  /:/_/::\
-#							 /__/:/ \__\:\ /__/::::| \:\ /__/:/__\/\:\
-#							 \  \:\ /  /:/ \  \:\~~\__\/ \  \:\ /~~/:/
-#							  \  \:\  /:/   \  \:\        \  \:\  /:/
-#							   \  \:\/:/     \  \:\        \  \:\/:/
-#							    \  \::/       \  \:\        \  \::/
-#							     \__\/         \__\/         \__\/
-#
-###############################################################################
 
 ## Gloabal Variables
 SOURCE_PATH="${SOURCE}:${SOURCE_SUBDIR}/"
@@ -99,12 +82,13 @@ function _jacktheripper() {
     "--joblog=${HOME}/logs/jacktheripper-parallel.log"
     "-X"
     "--progress"
-    "--load=50%"
+    "--load 50%"
     "--retries 3"
     "--noswap"
-    "--memfree=128M"
+    "--memfree 128M"
     "--resume-failed"
     "--delay"
+    "--shellquote"
   )
   local rcloneARGS=(
     "--fast-list"
