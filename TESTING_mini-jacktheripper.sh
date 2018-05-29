@@ -107,13 +107,9 @@ _Main() {
         read -p 'Press Any Key To Continue.'
         return 0
       }
-/home6/omg/.config/jacktheripper/token/Owncloud-e60bd7db1d6f.json
       _Json_Config_SA() {
         VALUES=(
-          'client_id ""'
-          'client_secret ""'
           'scope drive'
-          'root_folder_id ""'
           'service_account_file {}'
           "team_drive $teamDrive"
         )
