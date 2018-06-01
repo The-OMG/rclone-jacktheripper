@@ -4,34 +4,43 @@ _Main() {
   clear
   local TITLE="OMG's Service Account Config Generator"
   local DIR_JSON="$HOME/.config/rclone/tokens"
-  # local THREADS
-  # local Rclone_SA_List
-  local RCLONE_BETA="$HOME/.config/rclone/rclone-v1.41-070-g67e9ef45β-linux-amd64/rclone"
+  local RCLONE_BETA="$HOME/.config/rclone/rclone"
 
   _polly() {
     whiptail --title "YOU SHALL NOT PASS" --msgbox Exiting 10 60
     clear
     curl -s parrot.live
+    sleep 5
+    exit 1
   }
 
   _Token_Folder() {
+    # Make tokens folder
     mkdir -p "$DIR_JSON"
     whiptail --title "$TITLE" --msgbox "Place your JSON files in $DIR_JSON" 10 60
   }
 
   _TD_Name() {
     local PROMPT="What is your Teamdrive name?"
-    TD_NAME=$(whiptail --title "$TITLE" --inputbox "$PROMPT" 10 60 3>&1 1>&2 2>&3)
-    local RCLONE_CONFIG="$HOME/.config/rclone/$TD_NAME/rclone.conf"
+    TD_NAME=$(whiptail --title "$TITLE" --inputbox "$PROMPT" 10 60 3>&1 1>&2 2>&3 &&
+      exit 0 || exit 1)
+    local DIR_CONFIG="$HOME/.config/rclone/$TD_NAME"
 
-    exitstatus=$?
-    if [ $exitstatus = 0 ]; then
-      mkdir -p "$HOME/.config/rclone/$TD_NAME"
-      echo "" >$RCLONE_CONFIG
-    else
-      _polly
-    fi
+    mkdir -p "$DIR_CONFIG" || _polly
 
+    local RCLONE_CONFIG="$DIR_CONFIG/rclone.conf"
+    # Generate initial rclone.conf
+    touch $RCLONE_CONFIG
+
+    # copy .json files from /tokens/ to new TD folder.
+    for entry in "$DIR_JSON"/*.json; do
+      cp -n "$entry" "$DIR_CONFIG" ||
+        echo "There weren't any .json files found in $DIR_JSON"
+    done
+
+    #cp --no-clobber "$DIR_JSON"/*.json "$DIR_CONFIG/" || echo "There weren't any .json files found in $DIR_JSON" && exit 1
+
+    local DIR_CONFIG="$HOME/.config/rclone/$TD_NAME"
     local PROMPT="What is your Teamdrive Folder ID?"
     TD_FOLDER_ID=$(whiptail --title "$TITLE" --inputbox "$PROMPT" 10 60 3>&1 1>&2 2>&3 || _polly)
     VALUES=(
@@ -44,8 +53,9 @@ _Main() {
     local START=01
     local END
     local SA_NUMBERS
-    END=("$(find "$DIR_JSON" -type f -name '*.json' | wc -l)")
+    END=("$(find "$DIR_CONFIG" -type f -name '*.json' | wc -l)")
 
+    # Lets count.
     SA_NUMBERS=("$(
       for ((i = START; i <= END; i++)); do
         printf "%02d\n" $i
@@ -53,29 +63,19 @@ _Main() {
     )"
     )
 
+    # Found your .json files.
     local TOKENS
-    TOKENS=("$(find "$DIR_JSON" -type f -name '*.json')")
+    TOKENS=("$(find "$DIR_CONFIG" -type f -name '*.json')")
 
+    # Lets make a rclone.conf.
     parallel -J1 -X "$RCLONE_BETA config create gdsa{1}-$TD_NAME drive ${VALUES[*]}" ::: "${SA_NUMBERS[@]}" :::+ "${TOKENS[@]}" >/dev/null
 
-    #   local Rclone_SA_List
-    #
-    #   Rclone_SA_List=("$(for account in $($RCLONE_BETA listremotes --config "$RCLONE_CONFIG"); do
-    #     echo $account | sed "s/://"
-    #   done)")
-    #
-    #   # validate new keys
-    #   THREADS="$($RCLONE_BETA listremotes --config "$RCLONE_CONFIG" | sed "s/://" | grep -c gdsa)"
-    #   local pARGS=(
-    #     '-X'
-    #     -"j${THREADS}"
-    #     '--delay'
-    #   )
-    #   parallel "${pARGS[@]}" "$RCLONE_BETA touch {}:{}-test.GDSAtmp --config $RCLONE_CONFIG" ::: "${Rclone_SA_List[@]}"
-
-    for entry in "$DIR_JSON"/*; do
+    # Here's your Service Account emails.
+    for entry in "$DIR_CONFIG"/*; do
       cat "$entry" | jq '.client_email'
     done
+
+    rm -rf $DIR_TOKEN/*.json
 
     echo
     echo 'Make sure to share access to your service accounts.'
@@ -84,8 +84,11 @@ _Main() {
     echo "Your config file can be found here:"
     echo "$HOME/.config/rclone/$TD_NAME/rclone.conf"
     echo
+    echo "Your .json files were moved from $DIR_TOKEN to $DIR_CONFIG"
+    echo
+    echo
     echo 'See your new remotes with:'
-    echo "rclone listremotes --config $HOME/.config/rclone/$TD_NAME/rclone.conf"
+    echo "rclone listremotes --config $DIR_CONFIG/rclone.conf"
   }
   _Token_Folder
   _TD_Name
