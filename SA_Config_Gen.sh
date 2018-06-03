@@ -1,12 +1,12 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 _Main() {
     clear
-    local TITLE="OMG's Service Account Config Generator"
-    local DIR_JSON="$HOME/.config/rclone/tokens"
-    local RCLONE_BETA="$HOME/.config/rclone/rclone"
+    TITLE="OMG's Service Account Config Generator"
+    DIR_JSON="$HOME/.config/rclone/tokens"
+    RCLONE_BETA="$HOME/.config/rclone/rclone"
 
-    _polly() {
+    _Polly() {
         whiptail --title "YOU SHALL NOT PASS" --msgbox Exiting 10 60
         clear
         curl -s parrot.live
@@ -21,50 +21,46 @@ _Main() {
     }
 
     _TD_Name() {
-        local PROMPT="What is your Teamdrive name?"
+        PROMPT="What is your Teamdrive name?"
         TD_NAME=$(whiptail --title "$TITLE" --inputbox "$PROMPT" 10 60 3>&1 1>&2 2>&3 &&
-        exit 0 || exit 1)
-        local DIR_CONFIG="$HOME/.config/rclone/$TD_NAME"
+            exit 0 || exit 1)
+        DIR_CONFIG="$HOME/.config/rclone/$TD_NAME"
 
-        mkdir -p "$DIR_CONFIG" || _polly
+        mkdir -p "$DIR_CONFIG" || _Polly
 
-        local RCLONE_CONFIG="$DIR_CONFIG/rclone.conf"
+        RCLONE_CONFIG="$DIR_CONFIG/rclone.conf"
         # Generate initial rclone.conf
         touch $RCLONE_CONFIG
 
         # copy .json files from /tokens/ to new TD folder.
         for entry in "$DIR_JSON"/*.json; do
             cp -n "$entry" "$DIR_CONFIG" ||
-            echo "There weren't any .json files found in $DIR_JSON"
+                echo "There weren't any .json files found in $DIR_JSON"
         done
 
         #cp --no-clobber "$DIR_JSON"/*.json "$DIR_CONFIG/" || echo "There weren't any .json files found in $DIR_JSON" && exit 1
 
-        local DIR_CONFIG="$HOME/.config/rclone/$TD_NAME"
-        local PROMPT="What is your Teamdrive Folder ID?"
-        TD_FOLDER_ID=$(whiptail --title "$TITLE" --inputbox "$PROMPT" 10 60 3>&1 1>&2 2>&3 || _polly)
-        VALUES=(
-            'scope drive'
-            'service_account_file {2}'
-            "team_drive $TD_FOLDER_ID"
-            "--config $RCLONE_CONFIG"
-        )
+        DIR_CONFIG="$HOME/.config/rclone/$TD_NAME"
+        PROMPT="What is your Teamdrive Folder ID?"
+        TD_FOLDER_ID=$(whiptail --title "$TITLE" --inputbox "$PROMPT" 10 60 3>&1 1>&2 2>&3 || _Polly)
+        VALUES="scope drive \
+        service_account_file {2} \
+        team_drive $TD_FOLDER_ID \
+        --config $RCLONE_CONFIG"
 
-        local START=01
-        local END
-        local SA_NUMBERS
+        START=01
+
         END=("$(find "$DIR_CONFIG" -type f -name '*.json' | wc -l)")
 
         # Lets count.
         SA_NUMBERS=("$(
-                for ((i = START; i <= END; i++)); do
-                    printf "%02d\n" $i
-                done
-            )"
+            for ((i = START; i <= END; i++)); do
+                printf "%02d\n" $i
+            done
+        )"
         )
 
         # Found your .json files.
-        local TOKENS
         TOKENS=("$(find "$DIR_CONFIG" -type f -name '*.json')")
 
         # Lets make a rclone.conf.
@@ -74,7 +70,8 @@ _Main() {
         for entry in "$DIR_CONFIG"/*; do
             cat "$entry" | jq '.client_email'
         done
-
+        RCLONE_CONFIG=$(rclone config file)
+        cat "$OLD_RCLONE_CONFIG" >>"$RCLONE_CONFIG"
         rm -rf $DIR_JSON/*.json
 
         echo
