@@ -1,5 +1,7 @@
 #!/bin/sh
 
+SCRATCH="$(mktemp -d)"
+
 #  Paths
 DIR_APP="${HOME}/.config/jacktheripper"
 DIR_LOG="${HOME}/logs"
@@ -25,3 +27,21 @@ Rclone_Config="$(rclone config file | grep rclone.conf)"
 TmpRcloneConf="$(mktemp -q "$SCRATCH"/rclone.XXXX || {
     echo "rclone: Can't create temp file, exiting..." && exit 1
 } | tee -a "$LOG_SCRIPT")"
+
+# Service Account Variables
+SA_EMAILS="$DIR_APP/emails.txt"
+
+# jacktheripper
+COUNT_SA=$(wc -l <"$Rclone_SA_List")
+parallelARGS="-j$COUNT_SA \
+--tmux \
+--joblog=$LOG_PARALLEL \
+--progress \
+--load 50% \
+--retries=3 \
+--noswap \
+--memfree 128M \
+--resume-failed \
+--delay \
+--link \
+-X"

@@ -3,10 +3,9 @@
 ###############################################################################
 #  Wrapper script for rclone to distribute transfers over multiple accounts.  #
 ###############################################################################
-_Main() {
-    #source /dev/stdin <<< "$(curl https://raw.github.com/gurjeet/pg_dev_env/master/.bashrc)"
-    . "C:\Users\orion\Documents\GitHub\rclone-jacktheripper\sub\jacktheripper.sauce"
+eval "$(curl https://raw.githubusercontent.com/The-OMG/rclone-jacktheripper/master/sub/jacktheripper.sauce)"
 
+_Main() {
     SCRATCH="$(mktemp -d)"
 
     _Finish() {
@@ -27,7 +26,6 @@ _Main() {
 
     _job_printer() {
         _TmpRcloneConf() {
-            . "C:\Users\orion\Documents\GitHub\rclone-jacktheripper\sub\jacktheripper.sauce"
             # copy Users rclone.config to tmp location
             cp "$Rclone_Config" "$TmpRcloneConf"
 
