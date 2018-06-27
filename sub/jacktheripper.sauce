@@ -1,0 +1,27 @@
+#!/bin/sh
+
+#  Paths
+DIR_APP="${HOME}/.config/jacktheripper"
+DIR_LOG="${HOME}/logs"
+DIR_JSON="$DIR_APP/token/"
+
+#  Log Files
+LOG_SCRIPT="$DIR_LOG/jacktheripper.log"
+LOG_RCLONE="$DIR_LOG/jacktheripper-Rclone.log"
+LOG_PARALLEL="$DIR_LOG/jacktheripper-Parallel.log"
+
+# Temp Files
+TMP_SOURCE_FILE="$(curl -s x | sh 'filelist')"
+TMP_JOBS_FILE="$(curl -s x | sh 'joblist')"
+TMP_ACCOUNT_FILE="$(curl -s x | sh 'accounts')"
+
+#  Rclone Variables
+SOURCE="stubbs-TDmattpalm-movies"
+SOURCE_SUBDIR=""
+SOURCE_PATH="${SOURCE}:${SOURCE_SUBDIR}"
+GD_DEST_SUBDIR="mattpalm"
+
+Rclone_Config="$(rclone config file | grep rclone.conf)"
+TmpRcloneConf="$(mktemp -q "$SCRATCH"/rclone.XXXX || {
+    echo "rclone: Can't create temp file, exiting..." && exit 1
+} | tee -a "$LOG_SCRIPT")"
