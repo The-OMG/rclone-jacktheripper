@@ -6,7 +6,6 @@
 eval "$(curl https://raw.githubusercontent.com/The-OMG/rclone-jacktheripper/master/sub/jacktheripper.sauce)"
 
 _Main() {
-    SCRATCH="$(mktemp -d)"
 
     _Finish() {
         rm -rf "$SCRATCH"
